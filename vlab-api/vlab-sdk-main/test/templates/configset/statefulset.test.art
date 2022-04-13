@@ -1,0 +1,57 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "StatefulSet",
+    "metadata": {
+        "name": "vlab-controller-configs",
+        "namespace": "{{ proxy.namespace }}",
+        "labels": {
+            "created-by": "vlab-sdk"
+        }
+    },
+    "spec": {
+        "selector": {
+            "matchLabels": {
+                "instance": "configset",
+                "created-by": "vlab-sdk"
+            }
+        },
+        "replicas": 1,
+        "template": {
+            "metadata": {
+                "labels": {
+                    "instance": "configset",
+                    "created-by": "vlab-sdk"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "vlab-controller-configs",
+                        "image": "busybox",
+                        "imagePullPolicy": "Always",
+                        "command": [
+                            "tail",
+                            "-f",
+                            "/dev/null"
+                        ],
+                        "volumeMounts": [
+                            {
+                                "name": "vl-conf-pvc",
+                                "mountPath": "/etc/vlab-controller/config",
+                                "subPath": "config"
+                            }
+                        ]
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "vl-conf-pvc",
+                        "persistentVolumeClaim": {
+                            "claimName": "vlab-controller-config-pvc"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

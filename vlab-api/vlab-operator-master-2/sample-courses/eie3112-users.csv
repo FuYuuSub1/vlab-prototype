@@ -1,0 +1,5 @@
+username,email,firstName,lastName,role
+eie3112teacher1,eie3112teacher1@example.com,Teacher1,Teacher1,teacher
+eie3112teacher2,eie3112teacher2@example.com,Teacher2,Teacher2,teacher
+eie3112student1,eie3112student1@example.com,student1,student1,student
+eie3112student2,eie3112student2@example.com,student2,student2,student

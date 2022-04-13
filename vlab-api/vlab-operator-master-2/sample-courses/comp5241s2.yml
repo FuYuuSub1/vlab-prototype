@@ -1,0 +1,11 @@
+global:
+  course_id: comp5241s2
+  #pull_policy: Always
+  # teachers_only: true
+  # quantity_limit: 2
+specs:
+  docker:
+    display_name: Debian
+    description: Debian
+    #tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/comp5241s2/

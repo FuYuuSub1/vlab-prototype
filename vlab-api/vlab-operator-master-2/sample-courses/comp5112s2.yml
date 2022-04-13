@@ -1,0 +1,37 @@
+global:
+  course_id: comp5112s2
+  # pull_policy: Always
+  # teachers_only: true
+  # quantity_limit: 2
+specs:
+  docker:
+    display_name: Docker
+    description: You can try Docker using this image.
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/comp5112s2/
+    # enabled: false
+  mysql:
+    display_name: MySQL 8 Server
+    description: |
+      <ul>
+      <li>The databases are not persistent (i.e. changes you have made will be removed when the session is expired/terminated) </li>
+      </ul>
+    #tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    #tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/comp5112s2/intro.html
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/comp5112s2/
+    enabled: false
+  oracle18: 
+    display_name: Oracle 18c Database Server
+    description: |
+      <ul>
+      <li>The databases are not persistent (i.e. changes you have made will be removed when the session is expired/terminated) </li>
+      </ul>
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/comp5112s2/
+    #enabled: false
+  adminfile:
+    display_name: Admin Filebrowser
+    description: Admin Filebrowser
+    enabled: false    
+  adminvscode:
+    display_name: Admin VSCode1
+    description: Admin VSCode
+    enabled: false       

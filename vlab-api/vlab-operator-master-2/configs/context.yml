@@ -1,0 +1,33 @@
+secrets:
+  keycloak:
+    url: https://auth.vl.comp.polyu.edu.hk/auth/
+    token: 8635091e-0459-466d-8659-4a52cdb65f0c
+    auth_key: 69075b1b-8148-42e4-abae-269f1f834e60
+    realm: vlab
+    client: shinyproxy
+  nfs:
+    ip: "192.168.1.98"
+    rootdir: "/mnt/nfs"
+  redis:
+    host: redis-release-master.shinyproxy.svc.cluster.local
+    port: 6379
+    password: vlab2021
+  jdbc:
+    url: jdbc:mysql://mysql-release.shinyproxy.svc.cluster.local:3306/mysql
+    username: root
+    password: vlab2021
+settings:
+  proxy:
+    image: ghcr.io/endangeredf1sh/vlab-controller:1.0.2
+    namespace: "shinyproxy"
+    user_namespace_prefix: "vlab"
+    storage_size_per_user: 2Gi
+    session_timeout_milliseconds: 1800
+    idle_detection:
+      max_age_duration: PT4H
+      pure_http:
+        idle_timeout_milliseconds: 1800000
+      websocket:
+        interval_milliseconds: 60000
+        threshold: 40
+        retry_times: 30

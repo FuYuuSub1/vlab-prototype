@@ -1,0 +1,33 @@
+{
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+        "name": "{{ course.id }}",
+        "labels": {
+            "instance": "{{ course.id }}",
+            "created-by": "vlab-sdk"
+        },
+        "namespace": "{{ proxy.namespace }}"
+    },
+    "spec": {
+        "type": "NodePort",
+        "selector": {
+            "instance": "{{ course.id }}",
+            "created-by": "vlab-sdk"
+        },
+        "ports": [
+            {
+                "protocol": "TCP",
+                "port": 8080,
+                "name": "http",
+                "targetPort": 8080
+            },
+            {
+                "protocol": "TCP",
+                "port": 9090,
+                "name": "metrics",
+                "targetPort": 9090
+            }
+        ]
+    }
+}

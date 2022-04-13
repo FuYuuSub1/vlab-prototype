@@ -1,0 +1,42 @@
+{
+    "apiVersion": "networking.k8s.io/v1",
+    "kind": "Ingress",
+    "metadata": {
+        "labels": {
+            "instance": "portal-{{ course.id }}",
+            "created-by": "vlab-sdk"
+        },
+        "annotations": {
+            "kubernetes.io/ingress.class": "nginx",
+            "nginx.ingress.kubernetes.io/proxy-body-size": "256m",
+            "nginx.ingress.kubernetes.io/proxy-read-timeout": "500",
+            "nginx.ingress.kubernetes.io/proxy-connect-timeout": "500",
+            "nginx.ingress.kubernetes.io/proxy-send-timeout": "500"
+        },
+        "name": "portal-{{ course.id }}",
+        "namespace": "{{ proxy.namespace }}"
+    },
+    "spec": {
+        "rules": [
+            {
+                "host": "{{ course.id }}",
+                "http": {
+                    "paths": [
+                        {
+                            "backend": {
+                                "service": {
+                                    "name": "{{ course.id }}",
+                                    "port": {
+                                        "number": 8080
+                                    }
+                                }
+                            },
+                            "path": "/",
+                            "pathType": "ImplementationSpecific"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

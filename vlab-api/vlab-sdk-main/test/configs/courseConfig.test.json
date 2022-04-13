@@ -1,0 +1,6 @@
+{
+    "id": "test0000",
+    "name": "Test course 0000",
+    "pullPolicy": "Always",
+    "studentLabQuota": 3
+}

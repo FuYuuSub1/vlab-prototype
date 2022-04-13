@@ -1,0 +1,36 @@
+[
+    {
+        "template": "docker",
+        "invisible": false,
+        "specId": "docker-1",
+        "displayName": "Docker in Docker Rootless",
+        "tutorialLink": "https://lm.vl.comp.polyu.edu.hk/comp5112s2/",
+        "description": "You can try Docker using this image.",
+        "applications": [
+            "VSCode"
+        ]
+    },
+    {
+        "template": "docker",
+        "invisible": false,
+        "specId": "docker-2",
+        "displayName": "Docker in Docker Rootless",
+        "tutorialLink": "https://lm.vl.comp.polyu.edu.hk/test1234/",
+        "description": "You can try Docker using this image.",
+        "applications": [
+            "VSCode"
+        ]
+    },
+    {
+        "template": "mysql",
+        "invisible": false,
+        "specId": "mysql-1",
+        "displayName": "MySQL 8 Server",
+        "tutorialLink": "https://lm.vl.comp.polyu.edu.hk/comp5112s2/",
+        "description": "<ul>\\n<li>The databases are not persistent (i.e. changes you have made will be removed when the session is expired\/terminated) <\/li>\\n<\/ul>",
+        "applications": [
+            "OmniDB",
+            "VSCode"
+        ]
+    }
+]

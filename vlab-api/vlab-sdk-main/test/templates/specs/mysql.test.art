@@ -1,0 +1,98 @@
+{
+    "id": "{{ specId }}",
+    "name": "mysql",
+    "access-groups": "{{ course.id }}",
+    "display-name": "{{ displayName }}",
+    "default-tutorial-link": "{{ tutorialLink }}",
+    "description": "{{@ description }}",
+    "containerSpecs": [
+        {
+            "image": "harbor.vl.comp.polyu.edu.hk/proxy/cswclui/vl-mysql8:1.0",
+            "cmd": [
+                "/usr/bin/supervisord"
+            ],
+            "resources": {
+                "limits": {
+                    "cpu": "1500m",
+                    "memory": "4Gi"
+                },
+                "requests": {
+                    "cpu": "600m",
+                    "memory": "2Gi",
+                    "ephemeral-storage": "3Gi"
+                }
+            },
+            "env": {
+                "START_OMNIDB": true,
+                "START_ORACLE": false,
+                "START_MYSQL": false,
+                "WWW_ROOT_PATH_OMNIDB": "/",
+                "MYSQL_ROOT_PASSWORD": "12345",
+                "LD_LIBRARY_PATH": "/opt/omnidb-server/"
+            },
+            "entryPoints": [
+                {
+                    "display-name": "VSCode",
+                    "description": "Execute \"start-mysql\" in VSCode terminal to start up the MySQL Server, then execute 'mysql -u root -p12345' to login as root.",
+                    "port": 8080
+                },
+                {
+                    "display-name": "OmniDB",
+                    "description": "A web-based database management tool for MySQL,Oracle and Postgres Databases. Default username and password is \"admin\".",
+                    "port": 8000
+                }
+            ],
+            "volumeMounts": [
+                {
+                    "mountPath": "/root/workspace",
+                    "name": "user-volume",
+                    "subPath": "{{ course.id }}/{{ displayName }}/workspace"
+                },
+                {
+                    "mountPath": "/etc/omnidb",
+                    "name": "user-volume",
+                    "subPath": "{{ course.id }}/{{ displayName }}/cfg/omnidb"
+                },
+                {
+                    "mountPath": "/root/.vscode",
+                    "name": "user-volume",
+                    "subPath": "{{ course.id }}/{{ displayName }}/cfg/.vscode"
+                },
+                {
+                    "mountPath": "/root/.local",
+                    "name": "user-volume",
+                    "subPath": "{{ course.id }}/{{ displayName }}/cfg/.local"
+                }
+            ],
+            "adminVolumeMounts": [
+                {
+                    "mountPath": "/root/workspace/www-{{ course.id }}",
+                    "name": "nfs-volume",
+                    "subPath": "www/{{ course.id }}"
+                },
+                {
+                    "mountPath": "/root/workspace/www-#{proxy.userId}",
+                    "name": "nfs-volume",
+                    "subPath": "www/#{proxy.userId}"
+                }
+            ]
+        }
+    ],
+    "kubernetes": {
+        "volumes": [
+            {
+                "name": "user-volume",
+                "persistentVolumeClaim": {
+                    "claimName": "user-data"
+                }
+            },
+            {
+                "name": "nfs-volume",
+                "nfs": {
+                    "path": "{{ secrets.nfs.rootdir }}",
+                    "server": "{{ secrets.nfs.host }}"
+                }
+            }
+        ]
+    }
+}

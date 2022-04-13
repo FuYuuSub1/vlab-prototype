@@ -1,0 +1,65 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "vlab-controller-{{ course.id }}",
+        "labels": {
+            "created-by": "vlab-sdk"
+        },
+        "namespace": "{{ proxy.namespace }}"
+    },
+    "spec": {
+        "selector": {
+            "matchLabels": {
+                "instance": "{{ course.id }}",
+                "created-by": "vlab-sdk"
+            }
+        },
+        "replicas": 1,
+        "template": {
+            "metadata": {
+                "labels": {
+                    "instance": "{{ course.id }}",
+                    "created-by": "vlab-sdk"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "vlab-controller",
+                        "image": "{{ proxy.image }}",
+                        "imagePullPolicy": "Always",
+                        "ports": [
+                            {
+                                "containerPort": 8080
+                            }
+                        ],
+                        "volumeMounts": [
+                            {
+                                "name": "config-volume",
+                                "mountPath": "/etc/vlab-controller/config",
+                                "subPath": "config/{{ course.id }}"
+                            }
+                        ],
+                        "resources": {
+                            "limits": {
+                                "memory": "3Gi"
+                            },
+                            "requests": {
+                                "memory": "2Gi"
+                            }
+                        }
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "config-volume",
+                        "persistentVolumeClaim": {
+                            "claimName": "vlab-controller-config-pvc"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

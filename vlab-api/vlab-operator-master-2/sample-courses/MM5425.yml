@@ -1,0 +1,16 @@
+global:
+  course_id: mm5425
+  # pull_policy: Always
+  # teachers_only: true
+  # quantity_limit: 2
+specs:
+  adminfile:
+    display_name: Admin Filebrowser
+    description: Admin Filebrowser
+    enabled: false
+  jupyterlab:
+    display_name: Jupyter Lab
+    description: Jupyter Lab App
+    #tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/weka/
+    #enabled: false
+  

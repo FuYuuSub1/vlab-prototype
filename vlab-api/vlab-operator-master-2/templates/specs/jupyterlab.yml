@@ -1,0 +1,62 @@
+id: {{ specs.jupyterlab.id | default("jupyterlab", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.jupyterlab.display_name }}
+default-tutorial-link: {{ specs.jupyterlab.tutorial_link }}
+description: |-
+{{ specs.jupyterlab.description | indent( width=2, first=True )}}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/cswclui/vl-jupyter:0.2
+  cmd:
+  - start-notebook.sh
+  - --NotebookApp.token=''
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 200m
+      memory: 400Mi
+  env:
+    JUPYTER_ENABLE_LAB: yes
+    GRANT_SUDO: 1
+  entryPoints:
+  - display-name: Jupyter Lab
+    port: 8888
+  volumeMounts:
+  - mountPath: "/home/jovyan/"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.jupyterlab.display_name }}/workspace
+  - mountPath: "/home/jovyan/data"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/data
+  adminVolumeMounts:
+  - mountPath: "/home/jovyan/www-{{ global.course_id }}"
+    name: "nfs-volume"
+    subPath: www/{{ global.course_id }}
+  - mountPath: "/home/jovyan/www-#{proxy.userId}"
+    name: "nfs-volume"
+    subPath: www/#{proxy.userId}
+
+- image: harbor.vl.comp.polyu.edu.hk/proxy/bitnami/rclone
+  cmd:
+  - /bin/bash 
+  - -c
+  - "rclone copy /data /pvc/data --ignore-existing; chmod -R 777 /pvc/data; tail -f /dev/null"
+  volumeMounts:
+  - mountPath: "/data"
+    name: "nfs-volume"
+    subPath: data/{{ global.course_id }}
+    readOnly: true
+  - mountPath: "/pvc/data"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/data
+
+kubernetes:
+  volumes:
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"
+  - name: "nfs-volume"
+    nfs:
+      path: {{ secrets.nfs.rootdir }}
+      server: {{ secrets.nfs.ip }}

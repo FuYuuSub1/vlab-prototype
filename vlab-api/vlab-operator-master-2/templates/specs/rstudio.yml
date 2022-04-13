@@ -1,0 +1,32 @@
+id: {{ specs.rstudio.id | default("rstudio", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.rstudio.display_name }}
+default-tutorial-link: {{ specs.rstudio.tutorial_link }}
+description: |-
+{{ specs.rstudio.description | indent( width=2, first=True ) }}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/cswclui/myrstudio:2.9
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 500Mi
+      ephemeral-storage: 1Gi
+  env:
+    DISABLE_AUTH: true
+    USERID: rstudio
+  entryPoints:
+  - display-name: RStudio
+    description: You should terminate the workspace in rstudio to avoid warning on next restart.
+    port: 8787
+  volumeMounts:
+  - mountPath: "/home/rstudio/"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.rstudio.display_name }}
+kubernetes:
+  volumes:
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"

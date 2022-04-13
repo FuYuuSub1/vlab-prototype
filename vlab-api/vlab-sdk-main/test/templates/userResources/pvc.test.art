@@ -1,0 +1,21 @@
+{
+    "apiVersion": "v1",
+    "kind": "PersistentVolumeClaim",
+    "metadata": {
+        "name": "user-data",
+        "labels": {
+            "created-by": "vlab-sdk"
+        }
+    },
+    "spec": {
+        "accessModes": [
+            "ReadWriteMany"
+        ],
+        "resources": {
+            "requests": {
+                "storage": "{{ proxy.userStorageQuota || '2Gi' }}"
+            }
+        },
+        "storageClassName": "rook-cephfs"
+    }
+}

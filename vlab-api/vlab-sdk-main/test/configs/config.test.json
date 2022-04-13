@@ -1,0 +1,34 @@
+{
+    "proxy": {
+        "image": "ghcr.io/endangeredf1sh/vlab-controller:1.0.2",
+        "namespace": "portal-test",
+        "userNamespacePrefix": "vlab",
+        "userStorageQuota": "2Gi",
+        "sessionTimeoutMilliseconds": 1800,
+        "idleDetection": {
+            "maxAgeDuration": "PT4H",
+            "pureHttp": {
+                "idleTimeoutMilliseconds": 1800000
+            },
+            "websocket": {
+                "intervalMilliseconds": 60000,
+                "threshold": 40,
+                "retryTimes": 30
+            }
+        }
+    },
+    "storageQuota": {
+        "student": "2Gi",
+        "teacher": "5Gi",
+        "superadmin": "10Gi"
+    },
+    "courseQuota": 3,
+    "workers": [
+        "worker1",
+        "worker2",
+        "worker3",
+        "worker4"
+    ],
+    "emailDomain": "connect.polyu.hk",
+    "tutorialDomain": "https://lm.vl.comp.polyu.edu.hk"
+}

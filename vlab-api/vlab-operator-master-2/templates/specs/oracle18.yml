@@ -1,0 +1,48 @@
+id: {{ specs.oracle18.id | default("oracle18", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.oracle18.display_name }}
+default-tutorial-link: {{ specs.oracle18.tutorial_link }}
+description: |-
+{{ specs.oracle18.description | indent( width=2, first=True )}}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/cswclui/vl-oracle18:1.0ccc
+  cmd:
+  - /usr/bin/supervisord
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 4Gi
+    requests:
+      cpu: 300m
+      memory: 2Gi
+      ephemeral-storage: 3Gi
+  env:
+    START_OMNIDB: true
+    START_ORACLE: false
+    WWW_ROOT_PATH_OMNIDB: /
+    LD_LIBRARY_PATH: "/opt/omnidb-server/"
+  entryPoints:
+  - display-name: "VSCode"
+    description: Execute "start-oracle" in VSCode terminal to start up the Oracle Server, then execute 'su oracle' to change user to oracle and then execute 'sqlplus / as sysdba' to login to Oracle.
+    port: 8080
+  - display-name: "OmniDB"
+    description: A web-based database management tool for MySQL,Oracle and Postgres Databases. Default username and password is "admin".
+    port: 8000
+  volumeMounts:
+  - mountPath: "/root/workspace"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.oracle18.display_name }}/workspace
+  - mountPath: "/etc/omnidb"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.oracle18.display_name }}/cfg/omnidb
+  - mountPath: "/root/.vscode"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.oracle18.display_name }}/cfg/.vscode
+  - mountPath: "/root/.local"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.oracle18.display_name }}/cfg/.local
+kubernetes:
+  volumes:
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"

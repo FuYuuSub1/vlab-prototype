@@ -1,0 +1,82 @@
+{
+    "id": "{{ specId }}",
+    "name": "docker",
+    "access-groups": "{{ course.id }}",
+    "display-name": "{{ displayName }}",
+    "default-tutorial-link": "{{ tutorialLink }}",
+    "description": "{{@ description }}",
+    "containerSpecs": [
+        {
+            "image": "harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/open-vscode:dind-rootless-v1.62.3",
+            "resources": {
+                "limits": {
+                    "cpu": "1500m",
+                    "memory": "2000Mi"
+                },
+                "requests": {
+                    "cpu": "100m",
+                    "memory": "600Mi",
+                    "ephemeral-storage": "1Gi"
+                }
+            },
+            "cmd": [
+                "/usr/bin/supervisord",
+                "-c",
+                "/etc/supervisor/supervisord.conf"
+            ],
+            "entryPoints": [
+                {
+                    "port": 3000,
+                    "display-name": "VSCode",
+                    "parameters": {
+                        "tkn": "vlabpolyu"
+                    }
+                }
+            ],
+            "volumeMounts": [
+                {
+                    "mountPath": "/home/rootless",
+                    "name": "user-volume",
+                    "subPath": "{{ course.id }}/{{ displayName }}/rootless"
+                }
+            ]
+        },
+        {
+            "image": "harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/dind-rootless:0.1",
+            "privileged": true,
+            "resources": {
+                "limits": {
+                    "cpu": "2500m",
+                    "memory": "2500Mi"
+                },
+                "requests": {
+                    "cpu": "100m",
+                    "memory": "2000Mi",
+                    "ephemeral-storage": "2Gi"
+                }
+            },
+            "cmd": [
+                "/usr/bin/supervisord",
+                "-c",
+                "/etc/supervisor/supervisord.conf"
+            ],
+            "volumeMounts": [
+                {
+                    "mountPath": "/home/rootless/workspace",
+                    "name": "user-volume",
+                    "subPath": "{{ course.id }}/{{ displayName }}/rootless/workspace"
+                }
+            ]
+        }
+    ],
+    "kubernetes": {
+        "volumes": [
+            {
+                "name": "user-volume",
+                "persistentVolumeClaim": {
+                    "claimName": "user-data"
+                }
+            }
+        ]
+    }
+}

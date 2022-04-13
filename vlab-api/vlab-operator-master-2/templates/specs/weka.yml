@@ -1,0 +1,55 @@
+id: {{ specs.weka.id | default("weka", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.weka.display_name }}
+default-tutorial-link: {{ specs.weka.tutorial_link }}
+description: |-
+{{ specs.weka.description | indent( width=2, first=True ) }}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/vlab-weka:0.2
+  cmd:
+  - /usr/bin/supervisord
+  - -n
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 1000Mi
+    requests:
+      cpu: 200m
+      memory: 500Mi
+  entryPoints:
+  - display-name: Weka
+    port: 6080
+  volumeMounts:
+  - mountPath: "/root/"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.weka.display_name }}/workspace
+  - mountPath: "/dev/shm"
+    name: "dshm"
+  - mountPath: "/root/Desktop/data"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/data
+- image: harbor.vl.comp.polyu.edu.hk/proxy/bitnami/rclone
+  cmd:
+  - /bin/bash 
+  - -c
+  - "rclone copy /data /pvc/data --ignore-existing; chmod -R 777 /pvc/data; tail -f /dev/null"
+  volumeMounts:
+  - mountPath: "/data"
+    name: "nfs-volume"
+    subPath: data/{{ global.course_id }}
+  - mountPath: "/pvc/data"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/data
+kubernetes:
+  volumes:
+  - name: "dshm"
+    emptyDir: 
+      medium: Memory
+      sizeLimit: 1Gi
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"
+  - name: "nfs-volume"
+    nfs:
+      path: {{ secrets.nfs.rootdir }}
+      server: {{ secrets.nfs.ip }}

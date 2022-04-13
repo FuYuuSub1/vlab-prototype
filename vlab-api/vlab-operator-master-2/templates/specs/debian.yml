@@ -1,0 +1,45 @@
+id: {{ specs.debian.id | default("debian", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.debian.display_name }}
+default-tutorial-link: {{ specs.debian.tutorial_link }}
+description: |-
+{{ specs.debian.description | indent( width=2, first=True )}}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/cswclui/vl-mysql8:0.3
+  cmd:
+  - /usr/bin/supervisord
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 500Mi
+      ephemeral-storage: 1Gi
+  env:
+    MYSQL_ROOT_PASSWORD: 12345
+    START_MYSQL: false
+    START_APACHED: false
+    START_OMNIDB: false
+    LD_LIBRARY_PATH: "/opt/omnidb-server/"
+  entryPoints:
+  - display-name: VSCode
+    port: 8080
+  volumeMounts:
+  - mountPath: "/root/workspace"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.debian.display_name }}/workspace
+  - mountPath: "/etc/omnidb"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.debian.display_name }}/cfg/omnidb
+  - mountPath: "/root/.vscode"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.debian.display_name }}/cfg/.vscode
+  - mountPath: "/root/.local"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.debian.display_name }}/cfg/.local
+kubernetes:
+  volumes:
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"

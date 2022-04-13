@@ -1,0 +1,67 @@
+id: {{ specs.adminvscode.id | default("adminvscode", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.adminvscode.display_name }}
+default-tutorial-link: {{ specs.adminvscode.tutorial_link }}
+description: |-
+{{ specs.adminvscode.description | indent( width=2, first=True )}}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/open-vscode:dind-rootless-v1.62.3
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 2000Mi
+    requests:
+      cpu: 100m
+      memory: 600Mi
+      ephemeral-storage: 1Gi
+  cmd: 
+  - /usr/bin/supervisord
+  - -c
+  - /etc/supervisor/supervisord.conf
+  entryPoints:
+  - port: 3000
+    display-name: VSCode
+    parameters:
+      tkn: vlabpolyu
+  volumeMounts:
+  - mountPath: "/home/rootless"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.adminvscode.display_name }}/rootless
+  adminVolumeMounts:
+  - mountPath: "/home/rootless/workspace/www-{{ global.course_id }}"
+    name: "nfs-volume"
+    subPath: www/{{ global.course_id }}
+  - mountPath: "/home/rootless/workspace/www-#{proxy.userId}"
+    name: "nfs-volume"
+    subPath: www/#{proxy.userId}
+  - mountPath: "/home/rootless/workspace/nfsroot"
+    name: "nfs-volume"
+- image: harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/dind-rootless:0.1
+  privileged: true
+  resources:
+    limits:
+      cpu: 2500m
+      memory: 2500Mi
+    requests:
+      cpu: 100m
+      memory: 2000Mi
+      ephemeral-storage: 2Gi
+  cmd: 
+  - /usr/bin/supervisord
+  - -c
+  - /etc/supervisor/supervisord.conf
+  volumeMounts:
+  - mountPath: "/home/rootless/workspace"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.adminvscode.display_name }}/rootless/workspace
+
+kubernetes:
+  volumes:
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"
+  - name: "nfs-volume"
+    nfs:
+      path: {{ secrets.nfs.rootdir }}
+      server: {{ secrets.nfs.ip }}      
+

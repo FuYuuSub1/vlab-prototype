@@ -1,0 +1,97 @@
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+spring:
+  session:
+    store-type: redis
+    redis.namespace: spring:session:{{ global.course_id }}
+  redis:
+    host: {{ secrets.redis.host }}
+    port: {{ secrets.redis.port }}
+    password: {{ secrets.redis.password }}
+
+server:
+  servlet.session.timeout: {{ settings.proxy.session_timeout_milliseconds | default(1800, true) }}
+
+proxy:
+  title: PolyU Virtual Labs - {{ global.course_id | upper }}
+  allowed-role: {{ global.course_id }}
+  quantity-limit: {{ global.quantity_limit | default(2, true)}}
+  domain: vl.comp.polyu.edu.hk
+  authentication: keycloak
+  keycloak:
+    realm: {{ secrets.keycloak.realm }}
+    auth-server-url: {{ secrets.keycloak.url }}
+    resource: {{ secrets.keycloak.client }}
+    name-attribute: preferred_username
+    use-resource-role-mappings: true
+    credentials-secret: {{ secrets.keycloak.token }}
+  identifier-label: COURSEID
+  identifier-value: {{ global.course_id }}
+  engagement:
+    filter-path:
+    - /db/dashboard
+    - /client_keep_alive
+    enabled: true
+    max-age: {{ settings.proxy.idle_detection.max_age_duration | default("PT4H", true) }}
+    idle-retry: {{ settings.proxy.idle_detection.websocket.retry_times | default(30, true) }}
+    threshold: {{ settings.proxy.idle_detection.websocket.threshold | default(40, true) }}
+  heartbeat-rate: {{ settings.proxy.idle_detection.websocket.interval_milliseconds | default(60000, true) }}
+  heartbeat-timeout: {{ settings.proxy.idle_detection.pure_http.idle_timeout_milliseconds | default(1800000, true) }}
+  usage-stats-url:
+    micrometer-url: micrometer
+    jdbc-url: {{ secrets.jdbc.url }}
+  usage-stats-username: {{ secrets.jdbc.username }}
+  usage-stats-password: {{ secrets.jdbc.password }}
+  admin-groups: admins
+  container-backend: kubernetes
+  container-wait-time: 120000
+  kubernetes:
+    custom-namespace: true
+    internal-networking: true
+    namespace-prefix: {{ settings.proxy.user_namespace_prefix | default("vlab", true) }}
+    pod-wait-time: 300000
+    image-pull-policy: {{ global.pull_policy | default("IfNotPresent", true) }}
+  landing-page: /
+  logo-url: https://imgur.com/wPnSCJc.png
+  port: 8080
+  filebrowser:
+    containerSpecs:
+    - image: harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/filebrowser:0.3
+      entryPoints:
+      - port: 9000
+      resources:
+        limits:
+          cpu: 500m
+          memory: 200Mi
+      cmd:
+      - "/filebrowser"
+      - "-b"
+      - "#{proxySpec.containerSpecs[0].env.get('PUBLIC_PATH')}"
+      - "-d"
+      - "/root/filebrowser.db"
+      volumeMount:
+      - mountPath: "/data/data-#{proxy.userId}"
+        name: "user-volume"
+      adminVolumeMounts:
+      - mountPath: "/data/share-{{ global.course_id }}"
+        name: "nfs-volume"
+        subPath: "data/{{ global.course_id }}"
+      - mountPath: "/data/www-{{ global.course_id }}"
+        name: "nfs-volume"
+        subPath: "www/{{ global.course_id }}"
+      - mountPath: "/data/www-#{proxy.userId}"
+        name: "nfs-volume"
+        subPath: "www/#{proxy.userId}"
+    kubernetes:
+      volumes:
+      - name: "user-volume"
+        persistentVolumeClaim:
+          claimName: "user-data"
+      - name: "nfs-volume"
+        nfs:
+          path: {{ secrets.nfs.rootdir }}
+          server: {{ secrets.nfs.ip }}

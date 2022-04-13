@@ -1,0 +1,40 @@
+id: {{ specs.jupyter.id | default("jupyter", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.jupyter.display_name }}
+default-tutorial-link: {{ specs.jupyter.tutorial_link }}
+description: |-
+{{ specs.jupyter.description | indent( width=2, first=True )}}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/cswclui/vl-jupyter:0.2
+  cmd:
+  - start-notebook.sh
+  - --NotebookApp.token=''
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2000Mi
+    requests:
+      cpu: 200m
+      memory: 400Mi
+  env: 
+    GRANT_SUDO: 1
+  entryPoints:
+  - display-name: Jupyter Notebook
+    port: 8888
+  volumeMounts:
+  - mountPath: "/home/jovyan/"
+    name: "user-volume"
+    subPath: {{ global.course_id }}/{{ specs.jupyter.display_name }}/workspace
+  - mountPath: "/data"
+    name: "nfs-volume"
+    subPath: "data/{{ global.course_id }}"
+kubernetes:
+  volumes:
+  - name: "user-volume"
+    persistentVolumeClaim:
+      claimName: "user-data"
+  - name: "jupyter-notebook-nfs"
+    nfs:
+      path: {{ secrets.nfs.rootdir }}
+      server: {{ secrets.nfs.ip }}
+      readOnly: true

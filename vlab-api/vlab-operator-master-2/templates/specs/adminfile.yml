@@ -1,0 +1,29 @@
+id: {{ specs.adminfile.id | default("adminfile", true) }}
+access-groups: {{ global.course_id }}
+display-name: {{ specs.adminfile.display_name }}
+description: |-
+{{ specs.adminfile.description | default("adminfile", true) | indent( width=2, first=True )}}
+containerSpecs:
+- image: harbor.vl.comp.polyu.edu.hk/proxy/cswclui/myfilebrowser:0.2
+  entryPoints:
+  - display-name: Filebrowser
+    disable-subdomain: true
+    port: 9000
+  cmd:
+  - "/filebrowser"
+  - "-b"
+  - "#{proxySpec.containerSpecs[0].env.get('PUBLIC_PATH')}"
+  - "-d"
+  - "/home/rootless/filebrowser.db"
+  volumeMounts:
+  - mountPath: "/data"
+    name: "nfs-volume"
+    subPath: "data/{{ global.course_id }}"
+
+kubernetes:
+  volumes:
+  - name: "nfs-volume"
+    nfs:
+      path: {{ secrets.nfs.rootdir }}
+      server: {{ secrets.nfs.ip }}
+

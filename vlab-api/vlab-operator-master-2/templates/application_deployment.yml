@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vlab-controller-{{ global.course_id }}
+  labels:
+    app: vlab-controller
+spec: 
+  selector:
+    matchLabels:
+      vl.comp.polyu.edu.hk/instance: {{ global.course_id }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        vl.comp.polyu.edu.hk/instance: {{ global.course_id }}
+        vl.comp.polyu.edu.hk/app: vlab-controller
+    spec:
+      tolerations:
+        - operator: "Exists"
+      containers:
+      - name: vlab-controller
+        image: {{ settings.proxy.image }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/vlab-controller/config
+          subPath: config/{{ global.course_id }}
+        resources:
+          limits:
+            memory: "3Gi"
+          requests:
+            memory: "2Gi"
+      volumes:
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: vlab-controller-config-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ global.course_id }}
+  labels:
+    vl.comp.polyu.edu.hk/app: vlab-controller
+spec:
+  type: NodePort
+  selector:
+    vl.comp.polyu.edu.hk/instance: {{ global.course_id }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    name: http
+    targetPort: 8080
+  - protocol: TCP 
+    port: 9090
+    name: metrics
+    targetPort: 9090
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ global.course_id }}
+    app.kubernetes.io/name: vlab-controller
+    vl.comp.polyu.edu.hk/app: vlab-controller
+  annotations:
+    kubernetes.io/ingress.class: nginx  
+    nginx.ingress.kubernetes.io/proxy-body-size: 256m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "500"
+  name: portal-{{ global.course_id }}
+  namespace: {{ settings.proxy.namespace }}
+spec:
+  rules:
+  - host: "{{ global.course_id }}.vl.comp.polyu.edu.hk"
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ global.course_id }}
+            port:
+              number: 8080
+        path: /
+        pathType: ImplementationSpecific
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ global.course_id }}
+    app.kubernetes.io/name: vlab-controller
+    vl.comp.polyu.edu.hk/app: vlab-controller
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/proxy-body-size: 256m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "500"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "500"
+  name: {{ global.course_id }}
+  namespace: {{ settings.proxy.namespace }}
+spec:
+  rules:
+  - host: "*.vl.comp.polyu.edu.hk"
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ global.course_id }}
+            port:
+              number: 8080
+        path: /{{ global.course_id }}/(.*)
+        pathType: ImplementationSpecific

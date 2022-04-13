@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vlab-controller-config-pvc
+  namespace: {{ settings.proxy.namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: rook-cephfs
+  resources:
+    requests:
+      storage: 200Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vlab-controller-configs
+  labels:
+    app: vlab-operator
+spec:
+  selector:
+    matchLabels:
+      vl.comp.polyu.edu.hk/instance: config
+      vl.comp.polyu.edu.hk/app: vlab-operator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        vl.comp.polyu.edu.hk/instance: config
+        vl.comp.polyu.edu.hk/app: vlab-operator
+    spec:
+      containers:
+      - name: vlab-controller-configs
+        image: busybox
+        imagePullPolicy: Always
+        command: ["tail","-f","/dev/null"]
+        volumeMounts:
+        - name: vl-conf-pvc
+          mountPath: /etc/vlab-controller/config
+          subPath: config
+      volumes:
+      - name: vl-conf-pvc
+        persistentVolumeClaim:
+          claimName: vlab-controller-config-pvc

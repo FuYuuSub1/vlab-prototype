@@ -1,0 +1,66 @@
+global:
+  course_id: comp1111
+  pull_policy: Always
+  # teachers_only: true           # means only admins can access all application
+  # quantity_limit: 2
+specs:
+  adminfile:
+    display_name: Admin Filebrowser
+    description: Admin Filebrowser
+    enabled: false
+  weka:
+    display_name: Weka
+    description: Machine Learning Software in Java
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/weka/
+    #enabled: false               # means only admins can access this application
+  docker:
+    display_name: Alpine Linux with Docker
+    description: You can try Docker using this image.
+    tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    #enabled: false
+  jupyterlab:
+    display_name: Jupyter Lab
+    description: Jupyter Lab App
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/weka/
+    #enabled: false
+  jupyter:
+    display_name: Jupyter
+    description: Jupyter Notebook
+    tutorial_link: https://lm.vl.comp.polyu.edu.hk/cswclui/weka/
+    #enabled: false
+  mysql:
+    display_name: MySQL 8 Server
+    description: |
+      <br/>This is an optimized image for Debian Linux with MySQL8 Server <br/>
+      <ul>
+      <li>To reduce the container startup time and resources, database servers are not started up automatically. </li>
+      <li>The databases are not persistent (i.e. changes you have made will be removed when the session is expired/terminated) </li>
+      <li> The default password for "root" user is "12345".            
+      </ul>
+    tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    #enabled: false
+  oracle18: 
+    display_name: Oracle 18c Database Server
+    description: |
+      <br/>This is an optimized image for Debian Linux with Oracle Server <br/>
+      <ul>
+      <li>To reduce the container startup time and resources, database servers are not started up automatically. </li>
+      <li>The databases are not persistent (i.e. changes you have made will be removed when the session is expired/terminated) </li>
+      </ul>
+    tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    #enabled: false
+  debian:
+    display_name: Debian
+    description: Debian 10 buster
+    tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    #enabled: false
+  rstudio:
+    display_name: "RStudio IDE"
+    description: rstudio
+    tutorial_link: https://cswclui.github.io/vlab-portal/all.html
+    #enabled: false
+
+# override context,yml
+# settings:
+#   proxy:
+#     image: ghcr.io/endangeredf1sh/vlab-controller:1.0.2

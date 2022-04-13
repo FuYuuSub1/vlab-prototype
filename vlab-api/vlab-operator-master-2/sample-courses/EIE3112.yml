@@ -1,0 +1,16 @@
+global:
+  course_id: eie3112
+  #pull_policy: Always
+  # teachers_only: true
+  # quantity_limit: 2
+specs:
+  adminfile:
+    display_name: Admin Filebrowser
+    description: Admin Filebrowser
+    enabled: false
+  weka:
+    display_name: Weka
+    description: Weka
+    tutorial_link: https://web.comp.polyu.edu.hk/cswclui/vlab/EIE3112_Lab3.pdf
+    #enabled: false
+  

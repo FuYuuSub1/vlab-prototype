@@ -1,0 +1,142 @@
+{
+    "management": {
+        "metrics": {
+            "export": {
+                "prometheus": {
+                    "enabled": true
+                }
+            }
+        }
+    },
+    "spring": {
+        "session": {
+            "store-type": "redis",
+            "redis.namespace": "spring:session:{{ course.id }}"
+        },
+        "redis": {
+            "host": "{{ secrets.redis.host }}",
+            "port": "{{ secrets.redis.port }}",
+            "password": "{{ secrets.redis.password }}"
+        }
+    },
+    "server": {
+        "servlet": {
+            "session": {
+                "timeout": "{{ proxy.sessionTimeoutMilliseconds || 1800 }}"
+            }
+        }
+    },
+    "proxy": {
+        "title": "PolyU Virtual Labs - {{ course.id | upper }}",
+        "allowed-role": "{{ course.id }}",
+        "domain": "vl.comp.polyu.edu.hk",
+        "authentication": "keycloak",
+        "keycloak": {
+            "realm": "{{ secrets.keycloak.realm }}",
+            "auth-server-url": "{{ secrets.keycloak.url }}",
+            "resource": "{{ secrets.keycloak.client }}",
+            "name-attribute": "preferred_username",
+            "use-resource-role-mappings": true,
+            "credentials-secret": "{{ secrets.keycloak.token }}"
+        },
+        "identifier-label": "COURSEID",
+        "identifier-value": "{{ course.id }}",
+        "engagement": {
+            "filter-path": [
+                "/db/dashboard",
+                "/client_keep_alive"
+            ],
+            "enabled": true,
+            "max-age": "{{ proxy.idleDetection?.maxAgeDuration || 'PT4H' }}",
+            "idle-retry": "{{ proxy.idleDetection?.websocket?.retryTimes || 30 }}",
+            "threshold": "{{ proxy.idleDetection?.websocket?.threshold || 40 }}"
+        },
+        "heartbeat-rate": "{{ proxy.idleDetection?.websocket?.intervalMilliseconds || 60000 }}",
+        "heartbeat-timeout": "{{ proxy.idleDetection?.pureHttp?.idleTimeoutMilliseconds || 1800000 }}",
+        "usage-stats-url": {
+            "micrometer-url": "micrometer",
+            "jdbc-url": "{{ secrets.jdbc.url }}"
+        },
+        "usage-stats-username": "{{ secrets.jdbc.username }}",
+        "usage-stats-password": "{{ secrets.jdbc.password }}",
+        "admin-groups": "admins",
+        "container-backend": "kubernetes",
+        "container-wait-time": 120000,
+        "container-quantity-limit": "{{ course?.studentLabQuota || 2 }}",
+        "kubernetes": {
+            "custom-namespace": true,
+            "internal-networking": true,
+            "namespace-prefix": "{{ proxy.userNamespacePrefix || 'vlab'}}",
+            "pod-wait-time": 300000,
+            "image-pull-policy": "{{ course?.pullPolicy || 'IfNotPresent' }}"
+        },
+        "landing-page": "/",
+        "logo-url": "https://imgur.com/wPnSCJc.png",
+        "port": 8080,
+        "filebrowser": {
+            "containerSpecs": [
+                {
+                    "image": "harbor.vl.comp.polyu.edu.hk/proxy/vlabpolyu/filebrowser:0.3",
+                    "entryPoints": [
+                        {
+                            "port": 9000
+                        }
+                    ],
+                    "resources": {
+                        "limits": {
+                            "cpu": "500m",
+                            "memory": "200Mi"
+                        }
+                    },
+                    "cmd": [
+                        "/filebrowser",
+                        "-b",
+                        "#{proxySpec.containerSpecs[0].env.get('PUBLIC_PATH')}",
+                        "-d",
+                        "/root/filebrowser.db"
+                    ],
+                    "volumeMount": [
+                        {
+                            "mountPath": "/data/data-#{proxy.userId}",
+                            "name": "user-volume"
+                        }
+                    ],
+                    "adminVolumeMounts": [
+                        {
+                            "mountPath": "/data/share-{{ course.id }}",
+                            "name": "nfs-volume",
+                            "subPath": "data/{{ course.id }}"
+                        },
+                        {
+                            "mountPath": "/data/www-{{ course.id }}",
+                            "name": "nfs-volume",
+                            "subPath": "www/{{ course.id }}"
+                        },
+                        {
+                            "mountPath": "/data/www-#{proxy.userId}",
+                            "name": "nfs-volume",
+                            "subPath": "www/#{proxy.userId}"
+                        }
+                    ]
+                }
+            ],
+            "kubernetes": {
+                "volumes": [
+                    {
+                        "name": "user-volume",
+                        "persistentVolumeClaim": {
+                            "claimName": "user-data"
+                        }
+                    },
+                    {
+                        "name": "nfs-volume",
+                        "nfs": {
+                            "path": "{{ secrets.nfs.rootdir }}",
+                            "server": "{{ secrets.nfs.host }}"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
